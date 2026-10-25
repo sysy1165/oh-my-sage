@@ -8,6 +8,41 @@ export { GatewayClient } from './gateway/client';
 export { createGatewayManager } from './gateway/manager';
 export type { GatewayManager } from './gateway/manager';
 
+// 小米云自动取码 / 扫码登录
+export {
+    getCentralLinkPasscode,
+    fetchPasscode,
+    listCloudDevices,
+    mintServiceToken,
+    resolveGatewayCandidates,
+    readCredentialsFromEnv,
+    readDeviceDidFromEnv,
+    isAutoLoginConfigured,
+    parseCookieHeader,
+    XiaomiCloudError,
+} from './cloud/passcode';
+export type {
+    AutoPasscodeOptions,
+    AutoPasscodeResult,
+    CloudDevice,
+    ServiceToken,
+    XiaomiCloudCredentials,
+    XiaomiCloudErrorCode,
+} from './cloud/passcode';
+export {
+    readStoredCredentials,
+    saveStoredCredentials,
+    clearStoredCredentials,
+    resolveCredentials,
+    hasAutoLoginCredentials,
+    credentialSource,
+    resolveAuthFile,
+    DEFAULT_AUTH_FILE,
+} from './cloud/credentialStore';
+export type { StoredXiaomiCredentials } from './cloud/credentialStore';
+export { startQrLogin, completeQrLogin } from './cloud/qrLogin';
+export type { QrLoginSession } from './cloud/qrLogin';
+
 // 工具函数
 export { getDevices, getDevice, fetchMiotSpec, clearMiotSpecCache } from './tools/device';
 export { getGraphs, getGraph, createGraph, updateGraph, deleteGraph, toggleGraph, findDeviceUsage } from './tools/graph';

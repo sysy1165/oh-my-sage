@@ -80,6 +80,8 @@ Client config shapes differ. `mcpServers` (`command` string + `env`) is the prim
 
 **Output size**: tools return compact output by default. `mijia_get_graph` and `mijia_get_device` default to `detail="summary"`; pass `detail="full"` or `node_ids` for full objects. Edit existing rules with `mijia_patch_graph` (changed nodes only, `baseHash` from `mijia_get_graph`) rather than `mijia_update_graph` (full replace, kept for compatibility). Both validators accept a saved rule `id`; `mijia_validate_graph_capabilities` reports problems via `valid=false`, not `isError`.
 
+**Auto passcode / QR login**: `src/core/cloud/qrLogin.ts` implements Xiaomi QR login (`/longPolling/loginUrl`); a successful scan saves `passToken` / `userId` / `cUserId` / `deviceId` to `.sessionstore/mijia-auth.json` (`MIJIA_AUTH_FILE` override). `src/core/cloud/credentialStore.ts` makes stored credentials take precedence over env, so users scan once and later page loads re-use the login. `src/core/cloud/passcode.ts` then mints a serviceToken and calls `miIO.get_central_link_passcode`. Web endpoints: `POST/GET/DELETE /api/auth/qr` and `GET/DELETE /api/auth`. Env fallback: `MIJIA_USER_ID` + `MIJIA_PASS_TOKEN` (or a full `MIJIA_COOKIE`), optional `MIJIA_C_USER_ID`, `MIJIA_DEVICE_ID`, `MIJIA_ROUTER_DID`. Without `MIJIA_ROUTER_DID`, the target device is resolved from the cloud device list by matching `GATEWAY_URL` host against `localip`. Credentials are equivalent to account login state — never log or commit them.
+
 ## Skill System
 
 Progressive disclosure in `.agents/skills/`:
@@ -141,6 +143,15 @@ LLM_API_KEY=your_key
 LLM_MODEL=gpt-4o
 # LLM_TEMPERATURE=0.7            # optional
 GATEWAY_URL=http://192.168.0.5  # example only; there is no built-in default
+
+# Optional: auto-fetch the one-time passcode from Xiaomi cloud.
+# Preferred: scan the QR code in the Web login page; it saves
+# .sessionstore/mijia-auth.json and later sessions need no scan.
+# MIJIA_AUTH_FILE=.sessionstore/mijia-auth.json
+# MIJIA_USER_ID=...
+# MIJIA_PASS_TOKEN=...
+# MIJIA_COOKIE=userId=...; passToken=...   # alternative to the two above
+# MIJIA_ROUTER_DID=...
 ```
 
 ## Comments

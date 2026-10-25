@@ -115,9 +115,8 @@ Skill 提供节点类型模板、节点连接规则、关键校验规则、dtype
 #### Step 3: 连接并使用
 
 1. **连接网关**（登录码是一次性的，每次连接都要从网关获取新的；HTTP 方式下已有会话登录过则无需再输入）：
-   ```
-   帮我连接米家网关，登录码是 123456
-   ```
+   - 已配置小米账号凭据：直接说“帮我连接米家网关”，`mijia_auth` 会自动取码
+   - 未配置：从米家 App 获取 6 位登录码，例如“帮我连接米家网关，登录码是 123456”
 2. **查看设备**：
    ```
    查看我有哪些米家设备
@@ -126,6 +125,24 @@ Skill 提供节点类型模板、节点连接规则、关键校验规则、dtype
    ```
    帮我创建一个自动化规则：每天晚上8点关闭客厅灯
    ```
+
+#### 扫码登录与自动取码（推荐）
+
+登录页支持用米家 App 扫码登录小米账号。扫码成功后登录态保存在本机 `.sessionstore/mijia-auth.json`，之后打开页面会自动取码并连接；只有登录态失效时才需要重新扫码。
+
+- 首次使用：打开 Web 登录页 → “扫码登录小米账号” → 用米家 App 扫码
+- MCP 与 Web 使用同一工作目录时会共用这份登录态，`mijia_auth` 可省略 `passcode`
+- 登录态文件路径可用 `MIJIA_AUTH_FILE` 修改；文件包含 `passToken`，不要提交或分享
+
+不使用扫码时（例如 Docker 私有服务器），也可以手动配置凭据作为备用：
+
+| 变量 | 说明 |
+|------|------|
+| `MIJIA_USER_ID` + `MIJIA_PASS_TOKEN` | 必填；浏览器登录 `account.xiaomi.com` 后从 Cookie 复制 |
+| `MIJIA_COOKIE` | 也可直接粘贴整段 Cookie，自动解析 `userId` / `passToken` |
+| `MIJIA_ROUTER_DID` | 可选；签发登录码的设备 DID，留空时按 `GATEWAY_URL` 自动匹配 |
+
+凭据等同于小米账号登录态，只放在本机 `.env` 或私有部署环境变量中，不要提交。扫码登录的持久化、HTTP / Docker 配置和排障见 [deploy/README.md](deploy/README.md#扫码登录与自动取码推荐)。
 
 #### MCP 工具列表
 
@@ -142,7 +159,7 @@ Skill 提供节点类型模板、节点连接规则、关键校验规则、dtype
     <tr>
       <td rowspan="3">连接</td>
       <td><code>mijia_auth</code></td>
-      <td>连接米家网关（需 6 位一次性登录码；已连接时无需再次认证）</td>
+      <td>连接米家网关（6 位一次性登录码；支持小米账号扫码/自动取码；已连接时无需再次认证）</td>
     </tr>
     <tr>
       <td><code>mijia_disconnect</code></td>
@@ -309,7 +326,7 @@ GATEWAY_URL=http://192.168.0.5
 npm run dev
 ```
 
-访问 http://localhost:3000，输入网关登录码即可使用。Web 方式必须在 `.env` 中设置 `GATEWAY_URL`；`LLM_TEMPERATURE` 可选，默认 0.7。会话记录保存在仓库下的 `.sessionstore/` 目录。
+访问 http://localhost:3000，可用米家 App 扫码登录小米账号（推荐），也可以输入 6 位登录码。扫码一次后登录态保存在本机，之后打开页面会自动取码并连接，失效时才需要重新扫码。Web 方式必须在 `.env` 中设置 `GATEWAY_URL`；`LLM_TEMPERATURE` 可选，默认 0.7。会话记录保存在仓库下的 `.sessionstore/` 目录。
 
 ---
 
@@ -390,6 +407,7 @@ oh-my-sage/
 │   ├── server/                # Web 后端（Agent、LLM、会话、Skill 加载）
 │   ├── core/                  # Core 库（MCP 和 Web 共用）
 │   │   ├── gateway/           # 网关客户端
+│   │   ├── cloud/             # 小米云扫码登录、自动取码、登录态存储
 │   │   ├── tools/             # 工具实现
 │   │   └── types/             # 类型定义
 │   └── mcp/                   # MCP Server

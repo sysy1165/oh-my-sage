@@ -6,8 +6,9 @@
 # 3. 客户端以 Streamable HTTP 连接 http://<服务器>:<MCP_PORT>/mcp，
 #    并携带请求头 Authorization: Bearer <MCP_AUTH_TOKEN>
 #
-# 网络要求：容器需能访问局域网内的米家网关（WebSocket），
-# 并能访问公网 miot-spec.org（校验设备能力时拉取 MIOT Spec）。
+# 网络要求：容器需能访问局域网内的米家网关（WebSocket）、公网 miot-spec.org
+# （校验设备能力时拉取 MIOT Spec），以及自动取码用到的小米官方接口
+# （account.xiaomi.com、sts.api.*、core.api.mijia.tech、api.io.mi.com）。
 # 普通端口映射即可，无需 network_mode: host。
 
 services:
@@ -22,6 +23,15 @@ services:
       - "${MCP_PORT:-3790}:3790"
     environment:
       GATEWAY_URL: ${GATEWAY_URL:-}
+      # 自动取码（可选）：配置后 mijia_auth 可省略 passcode
+      MIJIA_USER_ID: ${MIJIA_USER_ID:-}
+      MIJIA_PASS_TOKEN: ${MIJIA_PASS_TOKEN:-}
+      MIJIA_C_USER_ID: ${MIJIA_C_USER_ID:-}
+      MIJIA_DEVICE_ID: ${MIJIA_DEVICE_ID:-}
+      MIJIA_ROUTER_DID: ${MIJIA_ROUTER_DID:-}
+      MIJIA_COOKIE: "${MIJIA_COOKIE:-}"
+      # 扫码登录态文件（可选）：通常由 Web 端生成后复制并挂载进来
+      MIJIA_AUTH_FILE: ${MIJIA_AUTH_FILE:-}
       MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:?请在 .env 中设置 MCP_AUTH_TOKEN}
       MCP_HTTP_HOST: 0.0.0.0
       MCP_HTTP_PORT: "3790"
